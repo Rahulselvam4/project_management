@@ -1,0 +1,257 @@
+imple Project Management App Structure
+Project Directory Structure
+project-management-app/
+├── package.json
+├── next.config.js
+├── tailwind.config.js
+├── .env
+├── .env.example
+├── .gitignore
+├── tsconfig.json
+├── prisma/
+│   ├── schema.prisma
+│   └── seed.ts
+├── src/
+│   ├── app/
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── page.tsx
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   ├── dashboard/
+│   │   │   ├── page.tsx
+│   │   │   ├── projects/
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── [id]/
+│   │   │   │       └── page.tsx
+│   │   │   └── tasks/
+│   │   │       └── page.tsx
+│   │   └── api/
+│   │       ├── auth/
+│   │       │   └── route.ts
+│   │       ├── projects/
+│   │       │   └── route.ts
+│   │       └── tasks/
+│   │           └── route.ts
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── button.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── card.tsx
+│   │   │   └── badge.tsx
+│   │   ├── layout/
+│   │   │   ├── navbar.tsx
+│   │   │   └── sidebar.tsx
+│   │   ├── auth/
+│   │   │   └── login-form.tsx
+│   │   ├── projects/
+│   │   │   ├── project-card.tsx
+│   │   │   └── project-form.tsx
+│   │   └── tasks/
+│   │       ├── task-card.tsx
+│   │       └── task-form.tsx
+│   ├── lib/
+│   │   ├── prisma.ts
+│   │   ├── auth.ts
+│   │   └── utils.ts
+│   └── types/
+│       └── index.ts
+Database Schema Features
+The schema includes:
+Core Models
+
+User: Authentication and user management
+Project: Project information and settings
+Task: Task management with status tracking
+Team: Team organization
+Comment: Task comments and collaboration
+
+Key Features
+
+User authentication and roles
+Project management with teams
+Task tracking with statuses (TODO, IN_PROGRESS, DONE)
+Priority levels (LOW, MEDIUM, HIGH, URGENT)
+Task assignments and due dates
+Time tracking
+Comments and collaboration
+File attachments
+
+Relationships
+
+Users can own multiple projects
+Projects can have multiple tasks
+Tasks can be assigned to users
+Teams can have multiple members
+Tasks can have comments and attachments
+
+Getting Started
+1. Initialize the Project
+bashnpx create-next-app@latest project-management-app --typescript --tailwind --app
+cd project-management-app
+2. Install Dependencies
+bashnpm install prisma @prisma/client
+npm install next-auth
+npm install @types/bcryptjs bcryptjs
+npm install lucide-react
+npm install class-variance-authority clsx tailwind-merge
+3. Setup Environment Variables
+Create .env file:
+envDATABASE_URL="postgresql://username:password@localhost:5432/project_management_db"
+NEXTAUTH_SECRET="your-secret-key-here"
+NEXTAUTH_URL="http://localhost:3000"
+4. Setup Prisma
+bashnpx prisma init
+npx prisma db push
+npx prisma generate
+5. Run the Application
+bashnpm run dev
+Next Steps
+Once you confirm this structure works for you, I'll provide:
+
+Complete code for each component
+API routes implementation
+Database setup and seeding
+Authentication setup
+Step-by-step implementation guide
+
+Just let me know when you're ready for the actual code implementation!
+
+
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      UserRole @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ownedProjects Project[]     @relation("ProjectOwner")
+  assignedTasks Task[]        @relation("TaskAssignee")
+  comments      Comment[]
+  teamMembers   TeamMember[]
+
+  @@map("users")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members  TeamMember[]
+  projects Project[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String @id @default(cuid())
+  joinedAt DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String
+
+  @@unique([userId, teamId])
+  @@map("team_members")
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  priority    Priority      @default(MEDIUM)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  owner   User   @relation("ProjectOwner", fields: [ownerId], references: [id])
+  ownerId String
+  team    Team?  @relation(fields: [teamId], references: [id])
+  teamId  String?
+  tasks   Task[]
+
+  @@map("projects")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId  String
+  assignee   User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId String?
+  comments   Comment[]
+
+  @@map("tasks")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String
+  task     Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId   String
+
+  @@map("comments")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  MEMBER
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ON_HOLD
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
