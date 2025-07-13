@@ -6,10 +6,11 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["jsonProtocol"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "postgresql" // or whatever database you're using
   url      = env("DATABASE_URL")
 }
 
