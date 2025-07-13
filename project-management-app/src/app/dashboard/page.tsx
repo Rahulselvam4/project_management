@@ -18,7 +18,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-8 space-y-6">
-      <h1 className="text-3xl font-bold">Welcome, {session.user.name}</h1>
+      <h1 className="text-3xl font-bold">Welcome, {session.user!.name}</h1>
 
       {assignedTasks.length > 0 ? (
         <Link href="/dashboard/tasks" className="block bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow hover:bg-yellow-200 transition">

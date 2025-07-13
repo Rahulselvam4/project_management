@@ -1,4 +1,3 @@
-// src/components/tasks/task-list.tsx
 'use client';
 
 import { useRouter } from "next/navigation";
@@ -11,25 +10,26 @@ export function TaskList({ tasks, currentUserId }: { tasks: any[], currentUserId
       method: "POST",
     });
 
-    router.refresh(); // Re-fetch updated data
+    router.refresh();
   };
 
   return (
-    <ul className="space-y-2">
+    <ul className="space-y-4">
       {tasks.map((task) => (
-        <li key={task.id} className="border p-4 rounded">
-          <p className="font-semibold">{task.title}</p>
-          <p className="text-sm">{task.description}</p>
-          <p className="text-xs text-gray-600">
-            Assigned to: {task.assignee?.name || "Unassigned"} | Project: {task.project.name}
+        <li key={task.id} className="bg-white border border-blue-100 p-5 rounded-lg shadow hover:shadow-md transition">
+          <p className="text-lg font-semibold text-blue-800">{task.title}</p>
+          <p className="text-sm text-gray-700">{task.description}</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Assigned to: <strong>{task.assignee?.name || "Unassigned"}</strong><br />
+            Project: <strong>{task.project.name}</strong>
           </p>
 
           {task.assigneeId === currentUserId && task.status !== "DONE" && (
             <button
               onClick={() => handleComplete(task.id)}
-              className="mt-2 px-3 py-1 bg-green-600 text-white rounded"
+              className="mt-3 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
             >
-              Mark as Done
+              ✅ Mark as Done
             </button>
           )}
         </li>

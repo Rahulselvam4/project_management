@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { title, description, assignedToId, projectId } = await req.json();
+  const { title, description, assigneeId, projectId } = await req.json();
 
   if (!title || !projectId) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         title,
         description,
         projectId,
-        assigneeId: assignedToId || null,
+        assigneeId: assigneeId || null,
       },
     });
 

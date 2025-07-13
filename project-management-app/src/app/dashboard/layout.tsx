@@ -8,18 +8,21 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // ✅ Server-side session check
   const session = await getAuthSession();
-
-  if (!session?.user) {
-    redirect("/");
-  }
+  if (!session?.user) redirect("/");
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-blue-50">
+      {/* Sidebar */}
       <Sidebar />
-      <div className="flex-1 flex flex-col">
+
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Top Navbar */}
         <Navbar />
-        <main className="flex-1 p-4 bg-gray-50 overflow-y-auto">
+
+        {/* Main Content */}
+        <main className="flex-1 overflow-y-auto p-6 bg-blue-50">
           {children}
         </main>
       </div>

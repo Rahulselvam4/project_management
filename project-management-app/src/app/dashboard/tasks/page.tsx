@@ -1,8 +1,7 @@
 import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { TaskFormWrapper } from "@/components/tasks/TaskFormWrapper"; // ✅ Wrapper
-import { TaskList } from "@/components/tasks/task-list";
+import TasksSection from "./TasksSection";
 
 export default async function TasksPage() {
   const session = await getAuthSession();
@@ -16,10 +15,7 @@ export default async function TasksPage() {
 
   const tasks = await prisma.task.findMany({
     where: {
-      OR: [
-        { project: { ownerId: userId } },
-        { assigneeId: userId },
-      ],
+      OR: [{ project: { ownerId: userId } }, { assigneeId: userId }],
     },
     include: {
       assignee: true,
@@ -44,35 +40,19 @@ export default async function TasksPage() {
   );
 
   return (
-    <div className="p-8 space-y-10">
-      <h1 className="text-3xl font-bold mb-4">Tasks</h1>
+    <div className="p-8 min-h-screen bg-blue-50">
+      <div className="max-w-5xl mx-auto space-y-12">
+        <h1 className="text-3xl font-bold text-blue-800">Task Dashboard</h1>
 
-      {/* ✅ Wrapper only accepts data */}
-      {ownedProjects.length > 0 ? (
-        <TaskFormWrapper userId={userId} />
-      ) : (
-        <p className="text-gray-600">No projects found. Create a project first.</p>
-      )}
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Tasks Created by Me</h2>
-        <TaskList tasks={tasksCreatedByUser} currentUserId={userId} />
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Tasks Assigned To Me</h2>
-        <TaskList tasks={tasksAssignedToUser} currentUserId={userId} />
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Tasks Completed By Me</h2>
-        <TaskList tasks={tasksCompletedByUser} currentUserId={userId} />
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">Tasks Completed by People I Assigned</h2>
-        <TaskList tasks={tasksCompletedByAssignedUsers} currentUserId={userId} />
-      </section>
+        <TasksSection
+          userId={userId}
+          ownedProjects={ownedProjects}
+          tasksCreatedByUser={tasksCreatedByUser}
+          tasksAssignedToUser={tasksAssignedToUser}
+          tasksCompletedByUser={tasksCompletedByUser}
+          tasksCompletedByAssignedUsers={tasksCompletedByAssignedUsers}
+        />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/nextauth';
 import { prisma } from '@/lib/prisma';
 
+// POST: Create new project
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
 
@@ -38,5 +39,26 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Project creation error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// GET: List all projects created by the current user (used in task form)
+export async function GET() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const projects = await prisma.project.findMany({
+      where: { ownerId: session.user.id },
+      select: { id: true, name: true },
+    });
+
+    return NextResponse.json(projects, { status: 200 });
+  } catch (error) {
+    console.error("Fetch projects error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
