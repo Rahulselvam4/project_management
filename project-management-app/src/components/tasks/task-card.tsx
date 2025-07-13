@@ -1,6 +1,6 @@
 "use client";
 
-export function TaskCard({ task, currentUserId }: any) {
+export function TaskCard({ task, currentUserId, onUpdate }: any) {
   return (
     <div className="border border-blue-200 bg-white p-5 rounded-xl shadow-sm hover:shadow transition">
       <h3 className="text-lg font-semibold text-blue-800">{task.title}</h3>
